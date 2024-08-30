@@ -9,34 +9,33 @@ parsing and the 3D viewer.
 
 To use Printator, you will need:
 
-  * python (ideally 2.6.x or 2.7.x),
+  * Linux or MacOS (to use socat command)
+  * python (tested on 3.12.4),
   * pyserial (or python-serial on ubuntu/debian)
-  * pyglet
-  * argparse (installed by default with python >= 2.7)
+  * pyglet (<2.0)
   * wxPython
   * socat (external binary dependency, used to create virtual serial ports)
+  * Printrun (installed directly from the GitHub repo)
 
 # Initial setup
 
-You first need to fetch Printrun through the `git submodule` mechanism:
+Install most of the dependencies from the requirements.txt file
 
-    git submodule init
-    git submodule update
+    pip install -r requirements.txt
 
-Once this is done, you will just need to rerun the second command to update
-Printrun to the latest version when you want to.
+Once this is done, you will just need to install socat. Install instructions for Mac can be found at https://ports.macports.org/port/socat/.
 
 # Running
 
 Running Printator is as easy as
 
-    python2 printator.py
+    python printator.py
 
 It will create a serial port with a random file name and start the simulator.
 
 You can specify the serial port path with the `-s` option:
 
-    python2 printator.py -s `pwd`/sim
+    python printator.py -s `pwd`/sim
 
 You can also disable delays (i.e. process gcode as fast as possible, without
 realistically waiting) using the `-f` option.

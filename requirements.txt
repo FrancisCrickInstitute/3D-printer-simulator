@@ -1,0 +1,9 @@
+numpy==2.1.0
+pillow==10.4.0
+Printrun @ git+https://github.com/kliment/Printrun@2024b0efab44c84d566df366ff98b3a9ef6bb805
+pyglet==1.5.29
+pyserial==3.5
+setuptools==72.1.0
+six==1.16.0
+wheel==0.43.0
+wxPython==4.2.1
