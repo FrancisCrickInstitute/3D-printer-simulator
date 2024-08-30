@@ -24,7 +24,7 @@ import math
 import numpy
 
 import threading
-from Queue import Queue
+from queue import Queue
 
 import serial
 import subprocess
@@ -32,8 +32,6 @@ import tempfile
 import socket
 
 import wx
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "Printrun"))
 
 from printrun import gui  # NOQA
 from printrun import gcoder
@@ -114,7 +112,7 @@ class PrinterSimulator(object):
         self.sd_upload = False
 
     def log(self, message):
-        if self.debug: print "???", message
+        if self.debug: print("???", message)
 
     def start(self, frame):
         self.gcoder = gcoder.GCode([])
@@ -158,7 +156,7 @@ class PrinterSimulator(object):
     def process_gline_nong(self, gline):
         # These unbuffered commands must be acked manually
         if gline.command == "M114":
-            self.write("ok X:%.02fY:%.02fZ:%.02fE:%.02f Count:" % (self.cur_x, self.cur_y, self.cur_z, self.cur_e))
+            self.write("ok X:%.02f Y:%.02f Z:%.02f E:%.02f Count:" % (self.cur_x, self.cur_y, self.cur_z, self.cur_e))
         elif gline.command == "M105":
             self.write("ok T:100.0/225.0 B:98.0 /110.0 T0:228.0/220.0 T1:150.0/185")
         elif gline.command == "M115":
@@ -254,25 +252,25 @@ class PrinterSimulator(object):
             try:
                 self.process_gline(gline)
             except:
-                print "Exception caught while processing command %s" % gline.raw
+                print("Exception caught while processing command %s" % gline.raw)
                 traceback.print_exc()
             self.command_buffer.task_done()
 
     def write(self, data):
-        if self.debug: print ">>>", data
+        if self.debug: print(">>>", data)
         try:
-            self.port.write(data + "\n")
+            self.port.write((data + "\n").encode("utf-8"))
             self.port.flush()
         except socket.error:
             pass  # Don't do anything : reader thread will pick it up
 
     def reader(self):
-        print "Simulator listening on %s" % self.path
+        print("Simulator listening on %s" % self.path)
         while not self.stop_threads:
             if not self.port and self.server:
                 try:
                     self.conn, self.remote_addr = self.server.accept()
-                    print "TCP connection from %s:%s" % self.remote_addr
+                    print("TCP connection from %s:%s" % self.remote_addr)
                     self.conn.settimeout(com_timeout)
                     self.port = self.conn.makefile()
                 except socket.timeout:
@@ -284,13 +282,13 @@ class PrinterSimulator(object):
             except socket.error:
                 line = ""
             if self.server and not line:  # empty line returned from the socket: this is EOF
-                print "Lost connection from %s:%s" % self.remote_addr
+                print("Lost connection from %s:%s" % self.remote_addr)
                 self.port = None
                 continue
-            line = line.strip()
+            line = line.decode("utf-8").strip()
             if not line:
                 continue
-            if self.debug: print "<<<", line
+            if self.debug: print("<<<", line)
             try:
                 gline = self.gcoder.append(line)
                 if not gline.command.startswith("G"):  # unbuffered (okai, all G-commands are not buffered, but that's a light move from reality)
@@ -309,9 +307,9 @@ class PrinterSimulator(object):
     def init_glmodel(self):
         self.glmodel = actors.GcodeModelLight()
         generator = self.glmodel.load_data(self.gcoder)
-        generator_output = generator.next()
+        generator_output = next(generator)
         while generator_output is not None:
-            generator_output = generator.next()
+            generator_output = next(generator)
         self.glmodel.nvertices = 0
         self.glmodel.layer_stops[-1] = self.glmodel.nvertices
         self.glmodel.num_layers_to_draw = self.glmodel.max_layers + 1
@@ -320,6 +318,7 @@ class PrinterSimulator(object):
         self.glmodel.initialized = False
         self.glframe.objects[-1].model = self.glmodel
         self.refresh_timer = wx.CallLater(100, self.glframe.Refresh)
+        self.glmodel.fully_loaded = False
 
     def init_glhead(self):
         self.printhead = gcview.GCObject(actors.PrintHead())
